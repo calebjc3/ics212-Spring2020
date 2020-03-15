@@ -1,0 +1,242 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+/*
+ * Assignment 7, LinkedList 1.2 (fixed bugs and segmentation fault)
+ * Caleb Cheshire
+ * Combines my previous assignment5.c code and makes edits to use a LinkedList
+ * The purpose of this program is to use a linked list in a C program.
+ * Date Modified: 14 March 2020
+ */
+
+/*
+ * Variable to track items and clear the buffer
+ */
+char temp [50];
+
+/* Check structure */
+struct check {
+	int num;
+	char date[30];
+	char to[30];
+	float amount;
+	char descrip[30];
+	struct check *next;
+};
+
+/* Linked list of checks (checkbook) */
+struct check *checkbook = NULL;
+
+/* Keep track of last node, last check in the book */
+struct check *last = NULL;
+
+/* Function declarations */
+void addCheck(); //Add a check to the checkbook
+void deleteCheck(int chkNum); //Delete a check from the checkbook
+void showCheck(struct check *thisCheck); //show the desired check
+void showCheckbook(); //show the entire checkbook
+void showSpecificCheck(int chkNum); //show a specific check to the user
+
+/** FUNCTIONS **/
+
+/* Adds a check to the checkbook */
+void addCheck() {
+	
+	/* Creates new node and memory for the node. */
+	struct check *newNode = (struct check *)malloc(sizeof(struct check));
+
+	/* Sets the number of the check */
+	if (last == NULL) {
+		newNode -> num = 1;
+	} else {
+		newNode -> num = last -> num + 1;
+	}
+
+	/* Get user input for the check */
+
+	printf("Enter the number of the check: ");
+	scanf("%d", &newNode -> num);
+
+	printf("Enter the date in dd/mm/yy format: ");
+	getchar();
+	fgets(newNode -> date, 30, stdin);
+
+	printf("Enter the recipient: ");
+	fgets(newNode -> to, 30, stdin);
+
+	printf("Enter the amount in decimal form: ");
+	scanf("%f", &newNode -> amount);
+
+	/* Removes extra newline */
+	fgets(temp, 50, stdin);
+
+	printf("Enter a description: ");
+	fgets(newNode -> descrip, 30, stdin);
+
+	/* Print check info */
+	printf("--------------------\n");
+	printf("Check Number: %d\n", newNode -> num);
+	printf("Date: %s", newNode -> date);
+	printf("To: %s", newNode -> to);
+	printf("Amount: %.2f\n", newNode -> amount);
+	printf("Description: %s", newNode -> descrip);
+	printf("--------------------\n");
+
+	if (checkbook == NULL) {
+		checkbook = newNode;
+		last = newNode;
+	} else {
+		last -> next = newNode;
+		last = newNode;
+	}
+}
+
+/* Deleting a check */
+void deleteCheck(int chkNum) {
+	
+	struct check *temp = checkbook;
+	struct check *del = NULL;
+
+	if (temp == NULL) {
+		printf("Check %d was not found. \n", chkNum);
+	}
+	
+	if(chkNum == 1) {
+		checkbook = temp -> next;
+		free(temp);
+		return;
+	}
+	
+	for (int i = 0;i < chkNum-2;i++)
+		temp = temp -> next; //temp points to the n-1th node in the list
+	del = temp -> next; //nth node
+	temp -> next = del -> next; //n-1th node
+	free(del); //delete del
+}
+
+
+/* Show a specific check */
+void showSpecificCheck(int chkNum) {
+	
+	struct check *temp = checkbook;
+	struct check *del = NULL;
+
+	/* Empty list */
+	if (temp == NULL) {
+		printf("Check %d was not found. \n", chkNum);
+	}
+	/* First node */
+	else if (temp -> num == chkNum) {
+		showCheck(temp);
+	}
+	/* Other node */
+	else {
+		while (temp != NULL) {
+			/* Number is not in list */
+			if (temp -> next == NULL) {
+				printf("Check %d was not found. \n", chkNum);
+				break;
+			}
+			/* if number is found */
+			else {
+				showCheck(temp -> next);
+			}
+		}
+	}
+}
+
+/*
+ * Show Check Function
+ * @param the check to diplay
+ */
+void showCheck(struct check *thisCheck) {
+
+	printf("--------------------\n");
+	printf("Check #: %d\n", thisCheck -> num);
+	printf("Date: %s", thisCheck -> date);
+	printf("To: %s", thisCheck -> to);
+	printf("Amount: %.2f\n", thisCheck -> amount);
+	printf("Description: %s\n", thisCheck -> descrip);
+	printf("--------------------\n");
+
+}
+
+/*
+ * Show Checkbook Function
+ */
+void showCheckbook() {
+	struct check *current = checkbook;
+
+	while (current != NULL) {
+		showCheck(current);
+		current = current -> next;
+	}
+}
+
+/*
+ * Main function
+ */
+int main() {
+	
+	/* Keeps the user choice displayed */
+	char choice = ' ';
+	
+	/* Displays greeting */
+	printf("Aloha and welcome to your checkbook! Please select one of the options below: \n");
+
+	/* Continues to run program while user does not want to exit */
+	while ( choice != 'e') {
+
+		/* Display selection options to the user */
+		printf("Press 'a' to add a new check \n");
+		printf("Press 'v' to view your checkbook \n");
+		printf("Press 'c' to view a specific check \n");
+		printf("Press 'd' to delete a specific check \n");
+		printf("Press 'e' to exit the program \n\n");
+		printf("Enter your choice: \n");
+
+		/* Gets the user choice */
+		scanf("%c", &choice);
+
+		if (choice == 'a' ) {
+			addCheck();
+		}
+
+		else if (choice == 'v') {
+			showCheckbook();
+			/* Removes extra newline */
+			fgets(temp, 50, stdin);
+		}
+
+		else if (choice == 'c') {
+			int i;
+			printf("Enter the check number: \n");
+			scanf(" %d", &i);
+			showSpecificCheck(i);
+
+			/* Removes extra newline */
+			fgets(temp, 50, stdin);
+		}
+		
+		else if (choice == 'd') {
+			int j;
+			printf("Enter the number of the check you want to delete: \n");
+			scanf(" %d", &j);
+			deleteCheck(j);
+	
+			/* Removes extra newline */
+			fgets(temp, 50, stdin);
+		}
+
+		else if (choice == 'e') {
+			printf("Mahalo for using your checkbook. Have a great day!");
+		}
+
+		else {
+			printf("You must enter one of the selected options above.");
+		}
+	}
+	
+	return(0);			
+
+}
